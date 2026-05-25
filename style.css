@@ -1658,3 +1658,107 @@ optgroup {
     height: 28px;
   }
 }
+
+
+/* Videos de portafolio */
+
+/* ==========================================================================
+   VIDEOS EN PORTAFOLIO - AJUSTES PARA MEJOR VISUALIZACIÓN
+   ========================================================================== */
+
+/* Los items con videos ocupan el doble de altura en el grid */
+.arte__item:has(.arte__video-container) {
+  grid-row: span 2;
+}
+
+/* Contenedor para asegurar que el video respete el flujo del grid */
+.arte__img-wrapper {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  position: relative;
+}
+
+.arte__video-lazy {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  /* Evita que el video se estire o deforme */
+  display: block;
+  filter: grayscale(20%);
+  /* Opcional: un toque sutil para mantener tu estética raw */
+  transition: transform 0.6s var(--ease), filter 0.3s ease;
+}
+
+/* Efecto Hover heredado de tu diseño original */
+.arte__item:hover .arte__video-lazy {
+  transform: scale(1.05);
+  filter: grayscale(0%);
+  /* Recupera el color total al pasar el mouse */
+}
+
+/* ========================================================================
+   ESTILOS PARA VIDEOS - AGREGAR ESTO AL FINAL DE TU style.css
+   ======================================================================== */
+
+/* Contenedor del wrapper de imagen/video */
+.arte__img-wrapper {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: var(--ink-2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* IMPORTANTE: Estilos para el video dentro del wrapper */
+.arte__video-lazy {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  display: block;
+  background: var(--ink-2);
+}
+
+/* Contenedor específico para videos (para diferenciarlo si es necesario) */
+.arte__video-container {
+  background: var(--ink-3);
+}
+
+.arte__video-container .arte__video-lazy {
+  background: var(--ink-3);
+}
+
+/* Asegurar que el poster sea visible mientras carga */
+.arte__video-lazy::backdrop {
+  background: var(--ink-2);
+}
+
+/* ========================================================================
+   RESPONSIVE - Videos en móvil
+======================================================================== */
+
+@media (max-width: 768px) {
+  .arte__img-wrapper {
+    min-height: 300px;
+  }
+
+  .arte__video-lazy {
+    width: 100%;
+    height: auto;
+    aspect-ratio: 16/9;
+  }
+}
+
+@media (max-width: 480px) {
+  .arte__img-wrapper {
+    min-height: 250px;
+  }
+
+  .arte__video-lazy {
+    aspect-ratio: 9/16;
+  }
+}

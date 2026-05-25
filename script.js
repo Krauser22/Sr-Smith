@@ -14,7 +14,6 @@ document.addEventListener('mousemove', (e) => {
   cursor.style.top = mouseY + 'px';
 });
 
-// Trail con lag suave
 function animateTrail() {
   trailX += (mouseX - trailX) * 0.12;
   trailY += (mouseY - trailY) * 0.12;
@@ -24,7 +23,6 @@ function animateTrail() {
 }
 animateTrail();
 
-// Expand on hover
 document.querySelectorAll('a, button').forEach(el => {
   el.addEventListener('mouseenter', () => {
     cursor.style.transform = 'translate(-50%, -50%) scale(2)';
@@ -36,7 +34,6 @@ document.querySelectorAll('a, button').forEach(el => {
   });
 });
 
-// Ocultar cursor al salir de la ventana
 document.addEventListener('mouseleave', () => {
   cursor.style.opacity = '0';
   cursorTrail.style.opacity = '0';
@@ -108,23 +105,14 @@ function showTestimonio(index) {
   currentT = index;
 }
 
-function nextT() {
-  showTestimonio((currentT + 1) % testimonios.length);
-}
-function prevT() {
-  showTestimonio((currentT - 1 + testimonios.length) % testimonios.length);
-}
+function nextT() { showTestimonio((currentT + 1) % testimonios.length); }
+function prevT() { showTestimonio((currentT - 1 + testimonios.length) % testimonios.length); }
+function startAuto() { autoT = setInterval(nextT, 5500); }
+function resetAuto() { clearInterval(autoT); startAuto(); }
 
-function startAuto() {
-  autoT = setInterval(nextT, 5500);
-}
-function resetAuto() {
-  clearInterval(autoT);
-  startAuto();
-}
+if (tNext) tNext.addEventListener('click', () => { nextT(); resetAuto(); });
+if (tPrev) tPrev.addEventListener('click', () => { prevT(); resetAuto(); });
 
-tNext.addEventListener('click', () => { nextT(); resetAuto(); });
-tPrev.addEventListener('click', () => { prevT(); resetAuto(); });
 tDots.forEach(dot => {
   dot.addEventListener('click', () => {
     showTestimonio(parseInt(dot.dataset.i, 10));
@@ -132,21 +120,17 @@ tDots.forEach(dot => {
   });
 });
 
-// Swipe táctil
-let tTouchStart = 0;
-document.querySelector('.testimonios__slider').addEventListener('touchstart', e => {
-  tTouchStart = e.changedTouches[0].screenX;
-}, { passive: true });
-document.querySelector('.testimonios__slider').addEventListener('touchend', e => {
-  const diff = tTouchStart - e.changedTouches[0].screenX;
-  if (Math.abs(diff) > 50) {
-    diff > 0 ? nextT() : prevT();
-    resetAuto();
-  }
-});
+const sliderEl = document.querySelector('.testimonios__slider');
+if (sliderEl) {
+  let tTouchStart = 0;
+  sliderEl.addEventListener('touchstart', e => { tTouchStart = e.changedTouches[0].screenX; }, { passive: true });
+  sliderEl.addEventListener('touchend', e => {
+    const diff = tTouchStart - e.changedTouches[0].screenX;
+    if (Math.abs(diff) > 50) { diff > 0 ? nextT() : prevT(); resetAuto(); }
+  });
+}
 
-showTestimonio(0);
-startAuto();
+if (testimonios.length > 0) { showTestimonio(0); startAuto(); }
 
 
 // ===========================
@@ -155,87 +139,63 @@ startAuto();
 const formBtn = document.getElementById('formBtn');
 const formOk = document.getElementById('formOk');
 
-const dateMin = new Date().toISOString().split('T')[0];
+if (formBtn) {
+  function getFormValues() {
+    return {
+      nombre: document.getElementById('f-nombre').value.trim(),
+      tipo: document.getElementById('f-tipo').value,
+      desc: document.getElementById('f-desc').value.trim(),
+      tel: document.getElementById('f-tel').value.trim(),
+    };
+  }
 
-function getFormValues() {
-  return {
-    nombre: document.getElementById('f-nombre').value.trim(),
-    tipo: document.getElementById('f-tipo').value,
-    desc: document.getElementById('f-desc').value.trim(),
-    tel: document.getElementById('f-tel').value.trim(),
-  };
-}
-
-function validateForm() {
-  const v = getFormValues();
-  if (!v.nombre) return 'Ingresa tu nombre.';
-  if (!v.tipo) return 'Selecciona un servicio.';
-  if (!v.desc) return 'Cuéntame tu idea.';
-  if (!v.tel) return 'Ingresa tu WhatsApp.';
-  return null;
-}
-
-function setError(msg) {
-  formBtn.textContent = msg;
-  formBtn.style.background = '#8B1A10';
-  setTimeout(() => {
-    formBtn.textContent = 'Enviar solicitud';
-    formBtn.style.background = '';
-  }, 2800);
-}
-
-formBtn.addEventListener('click', () => {
-  const err = validateForm();
-  if (err) { setError(err); return; }
-
-  formBtn.textContent = 'Enviando...';
-  formBtn.disabled = true;
-
-  // Simulación — aquí iría el fetch real a un backend o servicio como Formspree
-  setTimeout(() => {
-    formBtn.style.display = 'none';
-    formOk.classList.add('visible');
-
-    // Construir enlace de WhatsApp con los datos del form
+  function validateForm() {
     const v = getFormValues();
-    const msg = encodeURIComponent(
-      `Hola, soy ${v.nombre}.\n\nQuiero agendar una cita para: *${v.tipo}*\n\nMi idea: ${v.desc}\n\nMi número: ${v.tel}`
-    );
-    const waLink = `https://wa.me/573227392938?text=${msg}`;
+    if (!v.nombre) return 'Ingresa tu nombre.';
+    if (!v.tipo) return 'Selecciona un servicio.';
+    if (!v.desc) return 'Cuéntame tu idea.';
+    if (!v.tel) return 'Ingresa tu WhatsApp.';
+    return null;
+  }
 
-    // Después de mostrar el ok, abrir WhatsApp automáticamente
-    setTimeout(() => {
-      window.open(waLink, '_blank');
-    }, 1200);
+  function setError(msg) {
+    formBtn.textContent = msg;
+    formBtn.style.background = '#8B1A10';
+    setTimeout(() => { formBtn.textContent = 'Enviar solicitud'; formBtn.style.background = ''; }, 2800);
+  }
 
-    // Reset después de 6s
+  formBtn.addEventListener('click', () => {
+    const err = validateForm();
+    if (err) { setError(err); return; }
+    formBtn.textContent = 'Enviando...';
+    formBtn.disabled = true;
     setTimeout(() => {
-      document.getElementById('f-nombre').value = '';
-      document.getElementById('f-tipo').value = '';
-      document.getElementById('f-desc').value = '';
-      document.getElementById('f-tel').value = '';
-      formBtn.disabled = false;
-      formBtn.textContent = 'Enviar solicitud';
-      formBtn.style.display = '';
-      formOk.classList.remove('visible');
-    }, 6000);
-  }, 1400);
-});
+      formBtn.style.display = 'none';
+      formOk.classList.add('visible');
+      const v = getFormValues();
+      const msg = encodeURIComponent(`Hola, soy ${v.nombre}.\n\nQuiero agendar una cita para: *${v.tipo}*\n\nMi idea: ${v.desc}\n\nMi número: ${v.tel}`);
+      setTimeout(() => window.open(`https://wa.me/573227392938?text=${msg}`, '_blank'), 1200);
+      setTimeout(() => {
+        ['f-nombre', 'f-tipo', 'f-desc', 'f-tel'].forEach(id => document.getElementById(id).value = '');
+        formBtn.disabled = false;
+        formBtn.textContent = 'Enviar solicitud';
+        formBtn.style.display = '';
+        formOk.classList.remove('visible');
+      }, 6000);
+    }, 1400);
+  });
+}
 
 
 // ===========================
-// 6. SMOOTH SCROLL — links internos
+// 6. SMOOTH SCROLL
 // ===========================
 document.querySelectorAll('a[href^="#"]').forEach(a => {
   a.addEventListener('click', function (e) {
     const target = document.querySelector(this.getAttribute('href'));
     if (!target) return;
     e.preventDefault();
-    const offset = navbar.offsetHeight + 16;
-    window.scrollTo({
-      top: target.getBoundingClientRect().top + window.scrollY - offset,
-      behavior: 'smooth'
-    });
+    window.scrollTo({ top: target.getBoundingClientRect().top + window.scrollY - (navbar.offsetHeight + 16), behavior: 'smooth' });
   });
 });
 
@@ -262,17 +222,13 @@ if (heroTitle) {
 // ===========================
 const marqueeTrack = document.querySelector('.marquee__track');
 if (marqueeTrack) {
-  marqueeTrack.parentElement.addEventListener('mouseenter', () => {
-    marqueeTrack.style.animationPlayState = 'paused';
-  });
-  marqueeTrack.parentElement.addEventListener('mouseleave', () => {
-    marqueeTrack.style.animationPlayState = 'running';
-  });
+  marqueeTrack.parentElement.addEventListener('mouseenter', () => { marqueeTrack.style.animationPlayState = 'paused'; });
+  marqueeTrack.parentElement.addEventListener('mouseleave', () => { marqueeTrack.style.animationPlayState = 'running'; });
 }
 
 
 // ===========================
-// 9. HIGHLIGHT de sección activa en el nav
+// 9. HIGHLIGHT sección activa en nav
 // ===========================
 const sections = document.querySelectorAll('section[id], footer[id]');
 const navAnchors = document.querySelectorAll('.nav__links a');
@@ -281,11 +237,84 @@ const sectionObserver = new IntersectionObserver((entries) => {
   entries.forEach(entry => {
     if (entry.isIntersecting) {
       const id = entry.target.getAttribute('id');
-      navAnchors.forEach(a => {
-        a.style.color = a.getAttribute('href') === `#${id}` ? 'var(--bone)' : '';
-      });
+      navAnchors.forEach(a => { a.style.color = a.getAttribute('href') === `#${id}` ? 'var(--bone)' : ''; });
     }
   });
 }, { threshold: 0.4 });
 
 sections.forEach(s => sectionObserver.observe(s));
+
+
+// ==========================================================================
+// 10. VIDEOS — SOLUCIÓN DEFINITIVA
+//
+// CAUSA RAÍZ DEL PROBLEMA:
+// La clase .reveal pone opacity:0 + translateY en el .arte__item padre.
+// Con preload="none", el video nunca carga por sí solo. Necesita que el
+// JS llame explícitamente a .load() y .play(). El IntersectionObserver
+// anterior dependía de que el elemento fuera "visto", pero como el item
+// tiene opacity:0 por .reveal (y puede estar por debajo del fold),
+// la combinación causaba que el video nunca se iniciara.
+//
+// SOLUCIÓN: Cargar los videos directamente en DOMContentLoaded, sin
+// esperar ningún IntersectionObserver. El video tiene preload="none"
+// así que no hay impacto en rendimiento hasta que se llame .load().
+// ==========================================================================
+
+function cargarVideo(video) {
+  // Evitar doble inicialización
+  if (video.dataset.loaded === 'true') return;
+  video.dataset.loaded = 'true';
+
+  const mp4 = video.getAttribute('data-src-mp4');
+  const webm = video.getAttribute('data-src-webm');
+
+  if (!mp4 && !webm) {
+    console.warn('[Video] Sin fuentes definidas en data-src-mp4 / data-src-webm', video);
+    return;
+  }
+
+  console.log(`[Video] Cargando: mp4="${mp4}" webm="${webm}"`);
+
+  // Asignar src a los <source> con su tipo correcto
+  const sources = video.querySelectorAll('source');
+  if (sources[0] && webm) { sources[0].setAttribute('src', webm); sources[0].setAttribute('type', 'video/webm'); }
+  if (sources[1] && mp4) { sources[1].setAttribute('src', mp4); sources[1].setAttribute('type', 'video/mp4'); }
+
+  // Asignar también al <video> directamente (indispensable en iOS/Safari)
+  if (mp4) video.setAttribute('src', mp4);
+
+  // Forzar carga
+  video.load();
+
+  // Reproducir
+  video.play()
+    .then(() => console.log('[Video] ✅ Reproduciendo:', mp4 || webm))
+    .catch(err => {
+      console.warn('[Video] ⚠️ Autoplay no permitido aún, esperando interacción del usuario:', err.message);
+      // Segundo intento al hacer scroll o click en la página
+      const retry = () => {
+        video.play().catch(() => { });
+        document.removeEventListener('scroll', retry);
+        document.removeEventListener('click', retry);
+      };
+      document.addEventListener('scroll', retry, { once: true });
+      document.addEventListener('click', retry, { once: true });
+    });
+}
+
+// Arrancar en DOMContentLoaded (DOM listo, recursos aún pueden estar cargando)
+document.addEventListener('DOMContentLoaded', () => {
+  const videos = document.querySelectorAll('.arte__video-lazy');
+  console.log(`[Video] DOM listo. Videos encontrados: ${videos.length}`);
+  videos.forEach((v, i) => {
+    console.log(`[Video ${i + 1}] Procesando...`);
+    cargarVideo(v);
+  });
+});
+
+// Seguro extra: si el script corre después de DOMContentLoaded (script diferido o en body)
+if (document.readyState !== 'loading') {
+  const videos = document.querySelectorAll('.arte__video-lazy');
+  videos.forEach(v => cargarVideo(v));
+}
