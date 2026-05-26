@@ -174,7 +174,7 @@ if (formBtn) {
       formOk.classList.add('visible');
       const v = getFormValues();
       const msg = encodeURIComponent(`Hola, soy ${v.nombre}.\n\nQuiero agendar una cita para: *${v.tipo}*\n\nMi idea: ${v.desc}\n\nMi número: ${v.tel}`);
-      setTimeout(() => window.open(`https://wa.me/573227392938?text=${msg}`, '_blank'), 1200);
+      setTimeout(() => window.open(`https://wa.me/57573227392938?text=${msg}`, '_blank'), 1200);
       setTimeout(() => {
         ['f-nombre', 'f-tipo', 'f-desc', 'f-tel'].forEach(id => document.getElementById(id).value = '');
         formBtn.disabled = false;
