@@ -291,7 +291,6 @@ function cargarVideo(video) {
   video.play()
     .then(() => console.log('[Video] ✅ Reproduciendo:', mp4 || webm))
     .catch(err => {
-      console.warn('[Video] ⚠️ Autoplay no permitido aún, esperando interacción del usuario:', err.message);
       // Segundo intento al hacer scroll o click en la página
       const retry = () => {
         video.play().catch(() => { });
@@ -318,3 +317,44 @@ if (document.readyState !== 'loading') {
   const videos = document.querySelectorAll('.arte__video-lazy');
   videos.forEach(v => cargarVideo(v));
 }
+
+
+/* Optimiazcion de videos */
+const videos = document.querySelectorAll('.arte__video-lazy');
+
+const observer = new IntersectionObserver((entries) => {
+
+  entries.forEach(entry => {
+
+    const video = entry.target;
+
+    if (entry.isIntersecting) {
+
+      // Cargar una sola vez
+      if (!video.dataset.loaded) {
+
+        const source = video.querySelector('source');
+
+        source.src = video.dataset.srcWebm;
+
+        video.load();
+
+        video.dataset.loaded = true;
+      }
+
+      // Reproducir
+      video.play().catch(() => { });
+
+    } else {
+
+      // SOLO pausa si salió bastante
+      video.pause();
+    }
+
+  });
+
+}, {
+  threshold: 0.3
+});
+
+videos.forEach(video => observer.observe(video));
